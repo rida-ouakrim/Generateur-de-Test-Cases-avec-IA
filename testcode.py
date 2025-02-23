@@ -10,7 +10,7 @@ import PyPDF2
 from io import BytesIO
 
 # Configuration Anthropic
-ANTHROPIC_API_KEY = "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"
+ANTHROPIC_API_KEY = ""
 MODEL = "claude-3-5-haiku-20241022"
 client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
 
