@@ -13,6 +13,9 @@ from reportlab.lib.units import inch
 from reportlab.lib.enums import TA_CENTER, TA_JUSTIFY
 from reportlab.lib import colors
 from streamlit_option_menu import option_menu
+import streamlit as st
+import os
+from dotenv import load_dotenv
 
 # Configuration de la page
 st.set_page_config(
@@ -21,6 +24,21 @@ st.set_page_config(
     layout="wide"
 )
 
+# Essayer de charger depuis .env pour le développement local
+load_dotenv()
+
+# Récupérer la clé API (priorité aux secrets Streamlit)
+def get_api_key():
+    # D'abord chercher dans les secrets Streamlit (production)
+    if 'ANTHROPIC_API_KEY' in st.secrets:
+        return st.secrets['ANTHROPIC_API_KEY']
+    # Sinon chercher dans les variables d'environnement (dev local)
+    else:
+        api_key = os.getenv("ANTHROPIC_API_KEY")
+        if not api_key:
+            st.error("Clé API Anthropic non trouvée. Vérifiez votre configuration.")
+        return api_key
+        
 # Fonction pour extraire le texte d'un fichier DOCX
 def extract_text_from_docx(file):
     doc = docx.Document(file)
@@ -353,7 +371,7 @@ def generate_test_cases(requirements, format_type, context="", example_case=""):
     load_dotenv()
     
     # Récupérer la clé API depuis les variables d'environnement
-    api_key = os.getenv("ANTHROPIC_API_KEY")
+    api_key = get_api_key()
     
     if not api_key:
         return "Erreur: Clé API non trouvée dans les variables d'environnement. Vérifiez votre fichier .env"
@@ -521,7 +539,7 @@ def chat_with_results(user_query, test_cases, conversation_history):
     load_dotenv()
     
     # Récupérer la clé API depuis les variables d'environnement
-    api_key = os.getenv("ANTHROPIC_API_KEY")
+    api_key = get_api_key()
     
     if not api_key:
         return "Erreur: Clé API non trouvée dans les variables d'environnement. Vérifiez votre fichier .env"
