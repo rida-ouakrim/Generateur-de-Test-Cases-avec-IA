@@ -700,7 +700,7 @@ with col_input:
                     st.error(f"Erreur lors du chargement: {str(e)}")
     
     # Section Exigence
-    with st.expander("Exigence", expanded=True):
+    with st.expander("Exigences / User Stories", expanded=True):
         req_tab1 ,req_tab2 = st.tabs(["Saisie manuelle", "Upload de fichier"])
         
         with req_tab1:
