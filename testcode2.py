@@ -701,7 +701,7 @@ with col_input:
     
     # Section Exigence
     with st.expander("Exigence", expanded=True):
-        req_tab1, req_tab2 = st.tabs(["Saisie manuelle"])
+        req_tab1, req_tab2 = st.tabs(["Saisie manuelle", ""]])
         
         with req_tab1:
             requirements_input = st.text_area("Saisissez votre exigence", height=150)
