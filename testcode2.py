@@ -708,27 +708,7 @@ with col_input:
             if requirements_input:
                 st.session_state.requirements = requirements_input
         
-        with req_tab2:
-            uploaded_file = st.file_uploader("Choisir un fichier d'exigence", type=["txt", "docx", "pdf"], key="req_file")
-            if uploaded_file is not None:
-                try:
-                    if uploaded_file.name.endswith('.docx'):
-                        requirements_from_file = extract_text_from_docx(uploaded_file)
-                    elif uploaded_file.name.endswith('.pdf'):
-                        uploaded_file.seek(0)
-                        requirements_from_file = extract_text_from_pdf(uploaded_file)
-                    else:
-                        uploaded_file.seek(0)
-                        requirements_from_file = uploaded_file.getvalue().decode("utf-8")
-                    
-                    st.session_state.requirements = requirements_from_file
-                    st.success(f"Exigence chargée depuis '{uploaded_file.name}'")
-                    
-                    with st.expander("Voir le contenu", expanded=False):
-                        st.text(requirements_from_file)
-                        
-                except Exception as e:
-                    st.error(f"Erreur lors du chargement: {str(e)}")
+        
     
     # Section Format
     with st.expander("Format des Cas de Test", expanded=True):
