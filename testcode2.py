@@ -838,15 +838,7 @@ with col_output:
                 # Recharger la page pour afficher les résultats mis à jour
                 st.rerun()
             
-            # Afficher l'historique des messages dans un expander pour gagner de l'espace
-            with st.expander("Voir l'historique des conversations", expanded=False):
-                for message in st.session_state.chat_history:
-                    if message["role"] == "user":
-                        st.markdown(f"**Vous:** {message['content']}")
-                        st.markdown("---")
-                    else:
-                        st.markdown(f"**Assistant:** {message['content']}")
-                        st.markdown("---")
+            
     # Traitement du bouton de génération
 if generate_btn:
     if not st.session_state.requirements:
