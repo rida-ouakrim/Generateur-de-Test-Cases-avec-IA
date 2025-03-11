@@ -610,7 +610,7 @@ def chat_with_results(user_query, test_cases, conversation_history):
                 "max_tokens": 8000,
                 "temperature": 0.3,
                 "system": system_prompt,
-                "messages": messages
+                "messages": messages,
                 "stream": True
             }
         )
