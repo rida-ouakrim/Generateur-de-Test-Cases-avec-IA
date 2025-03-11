@@ -390,9 +390,9 @@ def generate_test_cases(requirements, format_type, context="", example_case=""):
 **Scenario (1) : Connexion OK avec des identifiants valides.
 Précondition :** L'utilisateur est inscrit avec un e-Mail valide et un MP.
 **Etapes :**
-1. Accéder à la page de connexion.
-2. Saisir l'e-Mail et le MP valides.
-3. Cliquer sur "Se connecter".
+    1. Accéder à la page de connexion.
+    2. Saisir l'e-Mail et le MP valides.
+    3. Cliquer sur "Se connecter".
 **Résultat attendu** : L'utilisateur est redirigé vers la page d'accueil.
 
 **Scenario (2) : Connexion KO avec un e-Mail valide et un MP invalide.
@@ -611,6 +611,7 @@ def chat_with_results(user_query, test_cases, conversation_history):
                 "temperature": 0.3,
                 "system": system_prompt,
                 "messages": messages
+                "stram": True
             }
         )
         
