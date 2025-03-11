@@ -611,7 +611,7 @@ def chat_with_results(user_query, test_cases, conversation_history):
                 "temperature": 0.3,
                 "system": system_prompt,
                 "messages": messages
-                "stram": True
+                "stream": True
             }
         )
         
