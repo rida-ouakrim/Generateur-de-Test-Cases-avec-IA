@@ -829,7 +829,7 @@ with col_input:
                     st.error(f"Erreur lors du chargement: {str(e)}")
     
     # Section Exigence
-    with st.expander("Exigences / User Stories", expanded=True):
+    with st.expander("Exigence / User Storie", expanded=True):
         requirements_input = st.text_area("Saisissez votre exigence", height=150)
         if requirements_input:
             st.session_state.requirements = requirements_input
