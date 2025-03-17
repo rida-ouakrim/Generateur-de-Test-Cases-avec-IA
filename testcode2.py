@@ -38,7 +38,6 @@ def get_api_key():
         if not api_key:
             st.error("Clé API Anthropic non trouvée. Vérifiez votre configuration.")
         return api_key
-        
 # Fonction pour extraire le texte d'un fichier DOCX
 def extract_text_from_docx(file):
     doc = docx.Document(file)
@@ -307,7 +306,6 @@ def create_pdf(output_text, filename="cas_de_test.pdf"):
     buffer.close()
     
     return pdf_data
-
 # Fonction pour créer un DOCX à partir du texte
 def create_docx(output_text, filename="cas_de_test.docx"):
     doc = docx.Document()
@@ -361,11 +359,10 @@ def create_docx(output_text, filename="cas_de_test.docx"):
     
     return docx_data
 # Fonction pour générer des cas de test via l'API Claude
-# Fonction pour générer des cas de test via l'API Claude
-# Fonction pour générer des cas de test via l'API Claude
 def generate_test_cases(requirements, format_type, context="", example_case=""):
     import os
     from dotenv import load_dotenv
+    import langdetect
     
     # Charger les variables d'environnement
     load_dotenv()
@@ -384,8 +381,24 @@ def generate_test_cases(requirements, format_type, context="", example_case=""):
         "x-api-key": api_key
     }
     
-    # Exemple de format par défaut
-    exemple_format_defaut = """
+    # Détection de la langue de l'input (contexte + exigences)
+    try:
+        input_text = context + " " + requirements
+        detected_lang = langdetect.detect(input_text)
+        
+        # Par défaut, on considère le français
+        lang = "fr"
+        
+        # Si l'anglais est détecté, on adapte les instructions
+        if detected_lang == "en":
+            lang = "en"
+    except:
+        # En cas d'erreur de détection, on reste en français par défaut
+        lang = "fr"
+    
+    # Exemples de format selon la langue
+    if lang == "fr":
+        exemple_format_defaut = """
 **Cas fonctionnels
 **Scenario (1) : Connexion OK avec des identifiants valides.
 Précondition :** L'utilisateur est inscrit avec un e-Mail valide et un MP.
@@ -419,65 +432,152 @@ Etapes :**
 3. Cliquer sur "Se connecter".
 4. Refaire les 3 actions plusieurs fois.
 5. Un message d'erreur s'affiche et le compte est temporairement bloqué."""
+    else:  # Pour l'anglais
+        exemple_format_defaut = """
+**Functional Test Cases
+**Scenario (1): Successful login with valid credentials.
+Precondition:** User is registered with a valid email and password.
+**Steps:**
+    1. Access the login page.
+    2. Enter valid email and password.
+    3. Click on "Login".
+**Expected Result**: User is redirected to the home page.
+
+**Scenario (2): Failed login with valid email and invalid password.
+Precondition:** User is registered with a valid email and password.
+**Steps:**
+1. Access the login page.
+2. Enter valid email and invalid password.
+3. Click on "Login".
+**Expected Result**: An error message is displayed.
+
+**Scenario (3): Failed login with invalid email and valid password.
+Precondition:** User is registered with a valid email and password.**
+Steps:**
+1. Access the login page.
+2. Enter invalid email and valid password.
+3. Click on "Login".
+**Expected Result**: An error message is displayed.
+
+**Non-functional Test Cases
+**Scenario (4): Failed login after multiple attempts**
+**Steps:**
+1. Access the login page.
+2. Enter incorrect email and password.
+3. Click on "Login".
+4. Repeat the 3 actions several times.
+5. An error message is displayed and the account is temporarily blocked."""
     
     # Déterminer le format à utiliser
     if format_type == "custom" and example_case.strip():
         exemple_format = example_case
-        format_instruction = "Format personnalisé"
+        format_instruction = "Format personnalisé" if lang == "fr" else "Custom format"
     elif format_type == "gherkin":
         format_instruction = "Format Gherkin (Given, When, Then)"
         exemple_format = example_case if example_case.strip() else "Format Gherkin"
     else:
-        format_instruction = "Format par défaut"
+        format_instruction = "Format par défaut" if lang == "fr" else "Default format"
         exemple_format = exemple_format_defaut
     
-    # Construire le prompt
-    if format_type == "default":
-        instruction = f"""
-        Génère des cas de test pour l'exigence suivante en utilisant le format par défaut comme dans l'exemple ci-dessous.
-        Chaque cas de test doit inclure des scénarios fonctionnels et non-fonctionnels, avec des préconditions, 
-        des étapes numérotées et des résultats attendus.
+    # Construire le prompt selon la langue détectée
+    if lang == "fr":
+        # Construire le prompt en français
+        if format_type == "default":
+            instruction = f"""
+            Génère des cas de test pour l'exigence suivante en utilisant le format par défaut comme dans l'exemple ci-dessous.
+            Chaque cas de test doit inclure des scénarios fonctionnels et non-fonctionnels, avec des préconditions, 
+            des étapes numérotées et des résultats attendus.
+            
+            {"Contexte fonctionnel: " + context if context else ""}
+            
+            Voici un exemple du format attendu :
+            
+            {exemple_format}
+            
+            Maintenant, génère des cas de test détaillés dans ce même format pour l'exigence suivante :
+            
+            {requirements}
+            """
+        elif format_type == "gherkin":
+            instruction = f"""
+            Génère des cas de test pour l'exigence suivante en utilisant le format Gherkin (Given, When, Then).
+            Chaque cas de test doit inclure des scénarios fonctionnels et non-fonctionnels.
+            
+            {"Contexte fonctionnel: " + context if context else ""}
+            
+            {"Exemple de format attendu: " + example_case if example_case else ""}
+            
+            Exigence: {requirements}
+            """
+        else:  # format_type == "custom"
+            instruction = f"""
+            Génère des cas de test pour l'exigence suivante en utilisant exactement le format personnalisé fourni en exemple.
+            Respecte strictement la structure et le style de l'exemple fourni.
+            
+            {"Contexte fonctionnel: " + context if context else ""}
+            
+            Voici un exemple du format attendu :
+            
+            {exemple_format}
+            
+            Maintenant, génère des cas de test détaillés dans ce même format personnalisé pour l'exigence suivante :
+            
+            {requirements}
+            """
         
-        {"Contexte fonctionnel: " + context if context else ""}
+        system_prompt = """Tu es un expert en tests logiciels qui génère des cas de test de haute qualité.
+        Ton travail consiste à analyser des exigences et à produire des scénarios de test complets, exhaustifs et précis.
+        Pour chaque exigence, couvre tous les aspects fonctionnels et non-fonctionnels (performance, sécurité, accessibilité, etc.).
+        Assure-toi d'une bonne mise en forme avec des retours à la ligne appropriés pour une meilleure lisibilité."""
+    else:
+        # Construire le prompt en anglais
+        if format_type == "default":
+            instruction = f"""
+            Generate test cases for the following requirement using the default format as shown in the example below.
+            Each test case should include functional and non-functional scenarios, with preconditions, 
+            numbered steps, and expected results.
+            
+            {"Functional context: " + context if context else ""}
+            
+            Here is an example of the expected format:
+            
+            {exemple_format}
+            
+            Now, generate detailed test cases in this same format for the following requirement:
+            
+            {requirements}
+            """
+        elif format_type == "gherkin":
+            instruction = f"""
+            Generate test cases for the following requirement using the Gherkin format (Given, When, Then).
+            Each test case should include functional and non-functional scenarios.
+            
+            {"Functional context: " + context if context else ""}
+            
+            {"Example of expected format: " + example_case if example_case else ""}
+            
+            Requirement: {requirements}
+            """
+        else:  # format_type == "custom"
+            instruction = f"""
+            Generate test cases for the following requirement using exactly the custom format provided as an example.
+            Strictly respect the structure and style of the provided example.
+            
+            {"Functional context: " + context if context else ""}
+            
+            Here is an example of the expected format:
+            
+            {exemple_format}
+            
+            Now, generate detailed test cases in this same custom format for the following requirement:
+            
+            {requirements}
+            """
         
-        Voici un exemple du format attendu :
-        
-        {exemple_format}
-        
-        Maintenant, génère des cas de test détaillés dans ce même format pour l'exigence suivante :
-        
-        {requirements}
-        """
-    elif format_type == "gherkin":
-        instruction = f"""
-        Génère des cas de test pour l'exigence suivante en utilisant le format Gherkin (Given, When, Then).
-        Chaque cas de test doit inclure des scénarios fonctionnels et non-fonctionnels.
-        
-        {"Contexte fonctionnel: " + context if context else ""}
-        
-        {"Exemple de format attendu: " + example_case if example_case else ""}
-        
-        Exigence: {requirements}
-        """
-    else:  # format_type == "custom"
-        instruction = f"""
-        Génère des cas de test pour l'exigence suivante en utilisant exactement le format personnalisé fourni en exemple.
-        Respecte strictement la structure et le style de l'exemple fourni.
-        
-        {"Contexte fonctionnel: " + context if context else ""}
-        
-        Voici un exemple du format attendu :
-        
-        {exemple_format}
-        
-        Maintenant, génère des cas de test détaillés dans ce même format personnalisé pour l'exigence suivante :
-        
-        {requirements}
-        """
-        
-    system_prompt = """Tu es un expert en tests logiciels qui génère des cas de test de haute qualité.
-    Ton travail consiste à analyser des exigences et à produire des scénarios de test complets, exhaustifs et précis.
-    Pour chaque exigence, couvre tous les aspects fonctionnels et non-fonctionnels (performance, sécurité, accessibilité, etc.)."""
+        system_prompt = """You are an expert software tester who generates high-quality test cases.
+        Your job is to analyze requirements and produce comprehensive, exhaustive, and accurate test scenarios.
+        For each requirement, cover all functional and non-functional aspects (performance, security, accessibility, etc.).
+        Ensure proper formatting with appropriate line breaks for better readability."""
     
     # Appel direct à l'API Claude via requests
     import requests
@@ -529,11 +629,11 @@ Etapes :**
         
         except Exception as e:
             return f"Erreur lors de l'appel à l'API Claude: {str(e)}"
-
 # Fonction pour le chatbot qui corrige/modifie les résultats
 def chat_with_results(user_query, test_cases, conversation_history):
     import os
     from dotenv import load_dotenv
+    import langdetect
     
     # Charger les variables d'environnement
     load_dotenv()
@@ -552,6 +652,18 @@ def chat_with_results(user_query, test_cases, conversation_history):
         "x-api-key": api_key
     }
     
+    # Détection de la langue
+    try:
+        detected_lang = langdetect.detect(test_cases)
+        # Par défaut, on considère le français
+        lang = "fr"
+        
+        # Si l'anglais est détecté, on adapte les instructions
+        if detected_lang == "en":
+            lang = "en"
+    except:
+        # En cas d'erreur de détection, on reste en français par défaut
+        lang = "fr"
     
     # Construire l'historique des messages pour l'API
     messages = []
@@ -569,38 +681,51 @@ def chat_with_results(user_query, test_cases, conversation_history):
         "content": user_query
     })
     
-    system_prompt = f"""Tu es un assistant spécialisé dans la correction et l'amélioration des cas de test.
-    Ton travail consiste à aider l'utilisateur à améliorer, corriger ou modifier les cas de test qui ont été générés.
-    
-    Voici les cas de test actuels sur lesquels tu dois travailler :
-    
-    {test_cases}
-    
-    RÈGLES ABSOLUES À SUIVRE:
-    1. CONSERVE TOUJOURS TOUS LES SCÉNARIOS ORIGINAUX dans ta réponse, même quand tu ajoutes ou modifies un seul scénario.
-    2. JAMAIS fournir uniquement les scénarios ajoutés ou modifiés - tu dois toujours fournir le document COMPLET.
-    3. Quand l'utilisateur demande de "changer le scénario X", tu modifies ce scénario tout en conservant tous les autres scénarios.
-    4. Quand l'utilisateur demande d'"ajouter des scénarios", tu ajoutes les nouveaux scénarios APRÈS tous les scénarios existants.
-    5. Si tu modifies ET ajoutes des scénarios, assure-toi que TOUS les scénarios (originaux modifiés + nouveaux) apparaissent dans ta réponse.
-    6. La numérotation des scénarios doit rester cohérente (Scenario 1, Scenario 2, etc.).
-    
-    FORMAT DE RÉPONSE REQUIS:
-    - Au début de ta réponse, ajoute exactement: MODIFIED:START
-    - Ensuite, inclus TOUS les cas de test (originaux + modifiés + nouveaux)
-    - À la fin des cas de test, ajoute exactement: MODIFIED:END
-    - Après ces balises, explique brièvement les modifications effectuées
-    
-    EXEMPLES:
-    Si les cas de test originaux contiennent les scénarios 1, 2, 3 et qu'on te demande de changer le scénario 1,
-    ta réponse doit contenir les scénarios 1 (modifié), 2 et 3 (inchangés).
-    
-    Si on te demande d'ajouter des scénarios, ta réponse doit contenir les scénarios 1, 2, 3 (inchangés) suivis des nouveaux scénarios 4, 5, etc.
-    
-    Si on te demande de changer le scénario 2 ET d'ajouter de nouveaux scénarios, ta réponse doit contenir les scénarios 1 (inchangé), 
-    2 (modifié), 3 (inchangé), suivis des nouveaux scénarios 4, 5, etc.
-    
-    Sois toujours poli et professionnel dans tes explications."""
-    
+    # Personnaliser le prompt système selon la langue
+    if lang == "fr":
+        system_prompt = f"""Tu es un assistant spécialisé dans la correction et l'amélioration des cas de test.
+        Ton travail consiste à aider l'utilisateur à améliorer, corriger ou modifier les cas de test qui ont été générés.
+        
+        Voici les cas de test actuels sur lesquels tu dois travailler :
+        
+        {test_cases}
+        
+        RÈGLES ABSOLUES À SUIVRE:
+        1. CONSERVE TOUJOURS TOUS LES SCÉNARIOS ORIGINAUX dans ta réponse, même quand tu ajoutes ou modifies un seul scénario.
+        2. JAMAIS fournir uniquement les scénarios ajoutés ou modifiés - tu dois toujours fournir le document COMPLET.
+        3. Quand l'utilisateur demande de "changer le scénario X", tu modifies ce scénario tout en conservant tous les autres scénarios.
+        4. Quand l'utilisateur demande d'"ajouter des scénarios", tu ajoutes les nouveaux scénarios APRÈS tous les scénarios existants.
+        5. Si tu modifies ET ajoutes des scénarios, assure-toi que TOUS les scénarios (originaux modifiés + nouveaux) apparaissent dans ta réponse.
+        6. La numérotation des scénarios doit rester cohérente (Scenario 1, Scenario 2, etc.).
+        7. Assure-toi de préserver la bonne structure avec des retours à la ligne appropriés pour une meilleure lisibilité.
+        
+        FORMAT DE RÉPONSE REQUIS:
+        - Au début de ta réponse, ajoute exactement: MODIFIED:START
+        - Ensuite, inclus TOUS les cas de test (originaux + modifiés + nouveaux)
+        - À la fin des cas de test, ajoute exactement: MODIFIED:END
+        - Après ces balises, explique brièvement les modifications effectuées"""
+    else:
+        system_prompt = f"""You are an assistant specialized in correcting and improving test cases.
+        Your job is to help the user improve, correct, or modify the test cases that were generated.
+        
+        Here are the current test cases you need to work on:
+        
+        {test_cases}
+        
+        ABSOLUTE RULES TO FOLLOW:
+        1. ALWAYS KEEP ALL ORIGINAL SCENARIOS in your response, even when you add or modify a single scenario.
+        2. NEVER provide only the added or modified scenarios - you must always provide the COMPLETE document.
+        3. When the user asks to "change scenario X", you modify that scenario while keeping all other scenarios.
+        4. When the user asks to "add scenarios", you add the new scenarios AFTER all existing scenarios.
+        5. If you modify AND add scenarios, ensure that ALL scenarios (original modified + new) appear in your response.
+        6. The numbering of scenarios must remain consistent (Scenario 1, Scenario 2, etc.).
+        7. Make sure to preserve the proper structure with appropriate line breaks for better readability.
+        
+        REQUIRED RESPONSE FORMAT:
+        - At the beginning of your response, add exactly: MODIFIED:START
+        - Then, include ALL test cases (original + modified + new)
+        - At the end of the test cases, add exactly: MODIFIED:END
+        - After these tags, briefly explain the modifications made"""
     try:
         response = requests.post(
             "https://api.anthropic.com/v1/messages",
@@ -610,8 +735,7 @@ def chat_with_results(user_query, test_cases, conversation_history):
                 "max_tokens": 8000,
                 "temperature": 0.3,
                 "system": system_prompt,
-                "messages": messages,
-                "stream": True
+                "messages": messages
             }
         )
         
@@ -640,11 +764,7 @@ def chat_with_results(user_query, test_cases, conversation_history):
         
     except Exception as e:
         return f"Erreur lors de l'appel à l'API Claude: {str(e)}"
-
-
-# Fonction pour le chatbot qui corrige/modifie les résultats
-
-    # Titre de l'application
+# Titre de l'application
 st.title("Assistant IA - Générateur des Cas de test")
 st.markdown("---")
 
@@ -667,6 +787,9 @@ if 'modified_test_cases' not in st.session_state:
 if 'chat_count' not in st.session_state:
     st.session_state.chat_count = 0
 
+if 'context_input' not in st.session_state:
+    st.session_state.context_input = ""
+
 # NOUVELLE STRUCTURE DE L'APPLICATION - 2 colonnes
 col_input, col_output = st.columns([1, 1], gap="large")
 
@@ -674,27 +797,32 @@ col_input, col_output = st.columns([1, 1], gap="large")
 with col_input:
     st.subheader("📝 Paramètres")
     
-    # Section Contexte
+    # Section Contexte - Obligatoire
     with st.expander("Contexte Fonctionnel", expanded=True):
         context_tab1, context_tab2 = st.tabs(["Saisie manuelle", "Upload de fichier"])
         
         with context_tab1:
-            context_input = st.text_area("Description générale de l'application", 
+            context_input = st.text_area("Description générale de l'application (obligatoire)", 
+                               value=st.session_state.context_input,
                                help="Contextualisez les cas de test", 
                                height=100)
+            
+            # Sauvegarde du contexte dans l'état de session
+            if context_input:
+                st.session_state.context_input = context_input
         
         with context_tab2:
-            context_file = st.file_uploader("Choisir un fichier de contexte", type=["txt", "docx", "pdf"], key="context_file")
+            context_file = st.file_uploader("Choisir un fichier de contexte (obligatoire)", type=["txt", "docx", "pdf"], key="context_file")
             if context_file is not None:
                 try:
                     if context_file.name.endswith('.docx'):
-                        context_input = extract_text_from_docx(context_file)
+                        st.session_state.context_input = extract_text_from_docx(context_file)
                     elif context_file.name.endswith('.pdf'):
                         context_file.seek(0)
-                        context_input = extract_text_from_pdf(context_file)
+                        st.session_state.context_input = extract_text_from_pdf(context_file)
                     else:
                         context_file.seek(0)
-                        context_input = context_file.getvalue().decode("utf-8")
+                        st.session_state.context_input = context_file.getvalue().decode("utf-8")
                     
                     st.success(f"Contexte chargé depuis '{context_file.name}'")
                 except Exception as e:
@@ -702,14 +830,9 @@ with col_input:
     
     # Section Exigence
     with st.expander("Exigences / User Stories", expanded=True):
-        req_tab1 ,req_tab2 = st.tabs(["Saisie manuelle", "Upload de fichier"])
-        
-        with req_tab1:
-            requirements_input = st.text_area("Saisissez votre exigence", height=150)
-            if requirements_input:
-                st.session_state.requirements = requirements_input
-        
-        
+        requirements_input = st.text_area("Saisissez votre exigence", height=150)
+        if requirements_input:
+            st.session_state.requirements = requirements_input
     
     # Section Format
     with st.expander("Format des Cas de Test", expanded=True):
@@ -745,7 +868,8 @@ with col_input:
         }
     </style>
     """, unsafe_allow_html=True)
-    # COLONNE 2 - Résultats et interactions
+    
+# COLONNE 2 - Résultats et interactions
 with col_output:
     st.subheader("📋 Résultats")
     
@@ -778,17 +902,17 @@ with col_output:
             docx_html = create_download_link(docx_data, "docx", "cas_de_test.docx")
             st.markdown(docx_html, unsafe_allow_html=True)
     
-    # Chatbot pour les modifications (limité à 5 échanges)
+    # Chatbot pour les modifications (limite augmentée à 10 échanges)
     if st.session_state.test_cases:
         st.markdown("---")
-        st.subheader("💬 Assistant de Correction (limité à 5 échanges)")
+        st.subheader("💬 Assistant de Correction (limité à 10 échanges)")
         
         # Afficher le compteur d'échanges restants
-        remaining_exchanges = 5 - st.session_state.chat_count
-        st.info(f"Échanges restants: {remaining_exchanges}/5")
+        remaining_exchanges = 10 - st.session_state.chat_count
+        st.info(f"Échanges restants: {remaining_exchanges}/10")
         
-        if st.session_state.chat_count >= 5:
-            st.warning("Vous avez atteint la limite de 5 échanges. Vous ne pouvez plus faire de modifications.")
+        if st.session_state.chat_count >= 10:
+            st.warning("Vous avez atteint la limite de 10 échanges. Vous ne pouvez plus faire de modifications.")
             
             # Afficher l'historique des messages
             with st.expander("Voir l'historique des conversations", expanded=False):
@@ -840,10 +964,13 @@ with col_output:
                 st.rerun()
             
             
-    # Traitement du bouton de génération
+# Traitement du bouton de génération
 if generate_btn:
-    if not st.session_state.requirements:
-        st.error("Veuillez saisir une exigence ou uploader un fichier.")
+    # Vérifier si le contexte est fourni (nouvelle condition obligatoire)
+    if not st.session_state.context_input:
+        st.error("Le contexte fonctionnel est obligatoire. Veuillez saisir un contexte ou uploader un fichier.")
+    elif not st.session_state.requirements:
+        st.error("Veuillez saisir une exigence.")
     elif st.session_state.format_type == "custom" and not example_case.strip():
         st.error("Pour utiliser le format personnalisé, vous devez fournir un exemple de cas de test.")
     else:
@@ -858,7 +985,7 @@ if generate_btn:
                 st.session_state.test_cases = generate_test_cases(
                     st.session_state.requirements,
                     st.session_state.format_type,
-                    context_input,
+                    st.session_state.context_input,
                     example_case
                 )
                 
