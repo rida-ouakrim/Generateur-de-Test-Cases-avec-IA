@@ -486,7 +486,7 @@ Steps:**
             instruction = f"""
             Génère des cas de test pour l'exigence suivante en utilisant le format par défaut comme dans l'exemple ci-dessous.
             Chaque cas de test doit inclure des scénarios fonctionnels et non-fonctionnels, avec des préconditions, 
-            des étapes numérotées et des résultats attendus.
+            des étapes numérotées , des résultats attendus et donne le max de scenario qui peut couvrir la totalite de l'exigence.
             
             {"Contexte fonctionnel: " + context if context else ""}
             
@@ -501,7 +501,7 @@ Steps:**
         elif format_type == "gherkin":
             instruction = f"""
             Génère des cas de test pour l'exigence suivante en utilisant le format Gherkin (Given, When, Then).
-            Chaque cas de test doit inclure des scénarios fonctionnels et non-fonctionnels.
+            Chaque cas de test doit inclure des scénarios fonctionnels et non-fonctionnels et donne le max de scenario qui peut couvrir la totalite de l'exigence.
             
             {"Contexte fonctionnel: " + context if context else ""}
             
@@ -512,7 +512,7 @@ Steps:**
         else:  # format_type == "custom"
             instruction = f"""
             Génère des cas de test pour l'exigence suivante en utilisant exactement le format personnalisé fourni en exemple.
-            Respecte strictement la structure et le style de l'exemple fourni.
+            Respecte strictement la structure et le style de l'exemple fourni et donne le max de scenario qui peut couvrir la totalite de l'exigence.
             
             {"Contexte fonctionnel: " + context if context else ""}
             
@@ -535,7 +535,7 @@ Steps:**
             instruction = f"""
             Generate test cases for the following requirement using the default format as shown in the example below.
             Each test case should include functional and non-functional scenarios, with preconditions, 
-            numbered steps, and expected results.
+            numbered steps,  expected results, and gives the maximum number of scenarios that can cover the entire requirement.
             
             {"Functional context: " + context if context else ""}
             
@@ -550,7 +550,7 @@ Steps:**
         elif format_type == "gherkin":
             instruction = f"""
             Generate test cases for the following requirement using the Gherkin format (Given, When, Then).
-            Each test case should include functional and non-functional scenarios.
+            Each test case should include functional and non-functional scenarios  and gives the maximum number of scenarios that can cover the entire requirement.
             
             {"Functional context: " + context if context else ""}
             
@@ -561,7 +561,7 @@ Steps:**
         else:  # format_type == "custom"
             instruction = f"""
             Generate test cases for the following requirement using exactly the custom format provided as an example.
-            Strictly respect the structure and style of the provided example.
+            Strictly respect the structure and style of the provided example  and gives the maximum number of scenarios that can cover the entire requirement.
             
             {"Functional context: " + context if context else ""}
             
