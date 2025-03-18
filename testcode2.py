@@ -482,11 +482,20 @@ Steps:**
     # Construire le prompt selon la langue détectée
     if lang == "fr":
         # Construire le prompt en français
-        if format_type == "default":
+       if format_type == "default":
             instruction = f"""
             Génère des cas de test pour l'exigence suivante en utilisant le format par défaut comme dans l'exemple ci-dessous.
             Chaque cas de test doit inclure des scénarios fonctionnels et non-fonctionnels, avec des préconditions, 
-            des étapes numérotées , des résultats attendus et donne le max de scenario qui peut couvrir la totalite de l'exigence avec plus de details et prendre en coöpte le moindre exigence de lexigence global.
+            des étapes numérotées, et des résultats attendus DÉTAILLÉS et NUMÉROTÉS. Il est TRÈS IMPORTANT que TOUS les résultats attendus soient bien énumérés.
+            
+            Tu dois générer le MAXIMUM de scénarios possibles pour couvrir la TOTALITÉ de l'exigence avec beaucoup de détails.
+            Analyse méticuleusement chaque aspect de l'exigence, même les plus petits détails, et crée un scénario pour chacun.
+            
+            IMPORTANT:
+            - Les scénarios liés aux fonctionnalités du système doivent être classés sous "Cas fonctionnels"
+            - Les scénarios liés à la performance, sécurité, et autres aspects non-fonctionnels doivent être classés sous "Cas non-fonctionnels"
+            - Sois TRÈS PRÉCIS dans la classification des cas (fonctionnels vs non-fonctionnels)
+            - Assure-toi que CHAQUE résultat attendu est clairement numéroté et détaillé (e.g., réception d'emails, messages affichés, etc.)
             
             {"Contexte fonctionnel: " + context if context else ""}
             
@@ -501,7 +510,16 @@ Steps:**
         elif format_type == "gherkin":
             instruction = f"""
             Génère des cas de test pour l'exigence suivante en utilisant le format Gherkin (Given, When, Then).
-            Chaque cas de test doit inclure des scénarios fonctionnels et non-fonctionnels et donne le max de scenario qui peut couvrir la totalite de l'exigence.
+            Chaque cas de test doit inclure des scénarios fonctionnels et non-fonctionnels.
+            
+            Tu dois générer le MAXIMUM de scénarios possibles pour couvrir la TOTALITÉ de l'exigence avec beaucoup de détails.
+            Analyse méticuleusement chaque aspect de l'exigence, même les plus petits détails, et crée un scénario pour chacun.
+            
+            IMPORTANT:
+            - Les scénarios liés aux fonctionnalités du système doivent être classés sous "Cas fonctionnels"
+            - Les scénarios liés à la performance, sécurité, et autres aspects non-fonctionnels doivent être classés sous "Cas non-fonctionnels"
+            - Sois TRÈS PRÉCIS dans la classification des cas (fonctionnels vs non-fonctionnels)
+            - Assure-toi que CHAQUE résultat attendu est clairement détaillé
             
             {"Contexte fonctionnel: " + context if context else ""}
             
@@ -512,7 +530,16 @@ Steps:**
         else:  # format_type == "custom"
             instruction = f"""
             Génère des cas de test pour l'exigence suivante en utilisant exactement le format personnalisé fourni en exemple.
-            Respecte strictement la structure et le style de l'exemple fourni et donne le max de scenario qui peut couvrir la totalite de l'exigence.
+            Respecte strictement la structure et le style de l'exemple fourni.
+            
+            Tu dois générer le MAXIMUM de scénarios possibles pour couvrir la TOTALITÉ de l'exigence avec beaucoup de détails.
+            Analyse méticuleusement chaque aspect de l'exigence, même les plus petits détails, et crée un scénario pour chacun.
+            
+            IMPORTANT:
+            - Les scénarios liés aux fonctionnalités du système doivent être classés sous "Cas fonctionnels"
+            - Les scénarios liés à la performance, sécurité, et autres aspects non-fonctionnels doivent être classés sous "Cas non-fonctionnels"
+            - Sois TRÈS PRÉCIS dans la classification des cas (fonctionnels vs non-fonctionnels)
+            - Assure-toi que CHAQUE résultat attendu est clairement détaillé
             
             {"Contexte fonctionnel: " + context if context else ""}
             
@@ -525,17 +552,34 @@ Steps:**
             {requirements}
             """
         
-        system_prompt = """Tu es un expert en tests logiciels qui génère des cas de test de haute qualité.
+         system_prompt = """Tu es un expert en tests logiciels qui génère des cas de test de haute qualité.
         Ton travail consiste à analyser des exigences et à produire des scénarios de test complets, exhaustifs et précis.
-        Pour chaque exigence, couvre tous les aspects fonctionnels et non-fonctionnels (performance, sécurité, accessibilité, etc.).
-        Assure-toi d'une bonne mise en forme avec des retours à la ligne appropriés pour une meilleure lisibilité."""
+        
+        DIRECTIVES IMPORTANTES:
+        1. Analyse très méticuleusement toutes les exigences, même les plus petits détails, et crée un scénario pour chaque aspect.
+        2. Génère le MAXIMUM de scénarios possibles pour couvrir la TOTALITÉ de l'exigence.
+        3. Pour chaque exigence, couvre tous les aspects fonctionnels et non-fonctionnels (performance, sécurité, accessibilité, etc.).
+        4. Classifie CORRECTEMENT les cas de test entre fonctionnels et non-fonctionnels.
+        5. Détaille et numérote TOUS les résultats attendus, y compris les notifications, emails, messages, changements d'état, etc.
+        6. Assure-toi d'une bonne mise en forme avec des retours à la ligne appropriés pour une meilleure lisibilité.
+        
+        Tu dois être exhaustif et ne pas oublier le moindre détail dans ton analyse des exigences."""
     else:
         # Construire le prompt en anglais
         if format_type == "default":
             instruction = f"""
             Generate test cases for the following requirement using the default format as shown in the example below.
             Each test case should include functional and non-functional scenarios, with preconditions, 
-            numbered steps,  expected results, and gives the maximum number of scenarios that can cover the entire requirement.
+            numbered steps, and DETAILED and NUMBERED expected results. It is VERY IMPORTANT that ALL expected results are well enumerated.
+            
+            You must generate the MAXIMUM number of scenarios possible to cover the ENTIRETY of the requirement with lots of details.
+            Meticulously analyze every aspect of the requirement, even the smallest details, and create a scenario for each.
+            
+            IMPORTANT:
+            - Scenarios related to system functionalities should be classified under "Functional Test Cases"
+            - Scenarios related to performance, security, and other non-functional aspects should be classified under "Non-functional Test Cases"
+            - Be VERY PRECISE in classifying cases (functional vs non-functional)
+            - Ensure that EACH expected result is clearly numbered and detailed (e.g., receipt of emails, displayed messages, etc.)
             
             {"Functional context: " + context if context else ""}
             
@@ -550,7 +594,16 @@ Steps:**
         elif format_type == "gherkin":
             instruction = f"""
             Generate test cases for the following requirement using the Gherkin format (Given, When, Then).
-            Each test case should include functional and non-functional scenarios  and gives the maximum number of scenarios that can cover the entire requirement.
+            Each test case should include functional and non-functional scenarios.
+            
+            You must generate the MAXIMUM number of scenarios possible to cover the ENTIRETY of the requirement with lots of details.
+            Meticulously analyze every aspect of the requirement, even the smallest details, and create a scenario for each.
+            
+            IMPORTANT:
+            - Scenarios related to system functionalities should be classified under "Functional Test Cases"
+            - Scenarios related to performance, security, and other non-functional aspects should be classified under "Non-functional Test Cases"
+            - Be VERY PRECISE in classifying cases (functional vs non-functional)
+            - Ensure that EACH expected result is clearly detailed
             
             {"Functional context: " + context if context else ""}
             
@@ -561,7 +614,16 @@ Steps:**
         else:  # format_type == "custom"
             instruction = f"""
             Generate test cases for the following requirement using exactly the custom format provided as an example.
-            Strictly respect the structure and style of the provided example  and gives the maximum number of scenarios that can cover the entire requirement.
+            Strictly respect the structure and style of the provided example.
+            
+            You must generate the MAXIMUM number of scenarios possible to cover the ENTIRETY of the requirement with lots of details.
+            Meticulously analyze every aspect of the requirement, even the smallest details, and create a scenario for each.
+            
+            IMPORTANT:
+            - Scenarios related to system functionalities should be classified under "Functional Test Cases"
+            - Scenarios related to performance, security, and other non-functional aspects should be classified under "Non-functional Test Cases"
+            - Be VERY PRECISE in classifying cases (functional vs non-functional)
+            - Ensure that EACH expected result is clearly detailed
             
             {"Functional context: " + context if context else ""}
             
@@ -576,8 +638,14 @@ Steps:**
         
         system_prompt = """You are an expert software tester who generates high-quality test cases.
         Your job is to analyze requirements and produce comprehensive, exhaustive, and accurate test scenarios.
-        For each requirement, cover all functional and non-functional aspects (performance, security, accessibility, etc.).
-        Ensure proper formatting with appropriate line breaks for better readability."""
+        
+        IMPORTANT GUIDELINES:
+        1. Very meticulously analyze all requirements, even the smallest details, and create a scenario for each aspect.
+        2. Generate the MAXIMUM number of scenarios possible to cover the ENTIRETY of the requirement.
+        3. For each requirement, cover all functional and non-functional aspects (performance, security, accessibility, etc.).
+        4. CORRECTLY classify test cases between functional and non-functional.
+        5. Detail and number ALL expected results, including notifications, emails, messages, state changes, etc.
+        6. Ensure proper formatting with appropriate line breaks for better readability.
     
     # Appel direct à l'API Claude via requests
     import requests
