@@ -1,4 +1,4 @@
-ec plimport streamlit as st
+import streamlit as st
 import tempfile
 import base64
 import requests
