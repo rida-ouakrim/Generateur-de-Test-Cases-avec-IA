@@ -1,4 +1,4 @@
-import streamlit as st
+ec plimport streamlit as st
 import tempfile
 import base64
 import requests
@@ -486,7 +486,7 @@ Steps:**
             instruction = f"""
             Génère des cas de test pour l'exigence suivante en utilisant le format par défaut comme dans l'exemple ci-dessous.
             Chaque cas de test doit inclure des scénarios fonctionnels et non-fonctionnels, avec des préconditions, 
-            des étapes numérotées , des résultats attendus et donne le max de scenario qui peut couvrir la totalite de l'exigence.
+            des étapes numérotées , des résultats attendus et donne le max de scenario qui peut couvrir la totalite de l'exigence avec plus de details et prendre en coöpte le moindre exigence de lexigence global.
             
             {"Contexte fonctionnel: " + context if context else ""}
             
