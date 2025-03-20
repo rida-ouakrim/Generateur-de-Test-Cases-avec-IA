@@ -802,9 +802,8 @@ with col_input:
         context_tab1, context_tab2 = st.tabs(["Saisie manuelle", "Upload de fichier"])
         
         with context_tab1:
-            context_input = st.text_area("Description générale de l'application (obligatoire)", 
+            context_input = st.text_area("Description générale de l'application (Obligatoire)", 
                                value=st.session_state.context_input,
-                               help="Contextualisez les cas de test", 
                                height=100)
             
             # Sauvegarde du contexte dans l'état de session
@@ -812,7 +811,7 @@ with col_input:
                 st.session_state.context_input = context_input
         
         with context_tab2:
-            context_file = st.file_uploader("Choisir un fichier de contexte (obligatoire)", type=["txt", "docx", "pdf"], key="context_file")
+            context_file = st.file_uploader("Choisir un fichier décrivant le contexte de l’application (Obligatoire)", type=["txt", "docx", "pdf"], key="context_file")
             if context_file is not None:
                 try:
                     if context_file.name.endswith('.docx'):
@@ -829,16 +828,16 @@ with col_input:
                     st.error(f"Erreur lors du chargement: {str(e)}")
     
     # Section Exigence
-    with st.expander("Exigence / User Storie", expanded=True):
-        requirements_input = st.text_area("Saisissez votre exigence", height=150)
+    with st.expander("Exigences/ User Stories", expanded=True):
+        requirements_input = st.text_area("Saisir l’exigence/ la US", height=150)
         if requirements_input:
             st.session_state.requirements = requirements_input
     
     # Section Format
     with st.expander("Format des Cas de Test", expanded=True):
         format_option = st.radio(
-            "Choisissez le format",
-            ("Par Défaut", "Gherkin (Given When Then)", "Personnalisé (basé sur l'exemple)"),
+            "Choisir le format :",
+            ("Par Défaut", "Gherkin (Given When Then)", "Personnalisé (Basé sur l’exemple)"),
             captions=["Format standard des cas de test", "Format Gherkin", "Format basé sur l'exemple fourni"]
         )
         
@@ -850,7 +849,7 @@ with col_input:
             st.session_state.format_type = "custom"
         
         example_case = st.text_area(
-            "Exemple d'un cas de test" + (" (obligatoire)" if format_option == "Personnalisé (basé sur l'exemple)" else " (optionnel)"),
+            "Fournir le 1er Cas de test au format attendu" + (" (Obligatoire)" if format_option == "Personnalisé (basé sur l'exemple)" else " (Optionnel)"),
             height=150
         )
     
@@ -871,7 +870,7 @@ with col_input:
     
 # COLONNE 2 - Résultats et interactions
 with col_output:
-    st.subheader("📋 Résultats")
+    st.subheader("📋 Résultat")
     
     # Zone d'affichage des résultats
     result_container = st.container(height=400, border=True)
@@ -905,7 +904,7 @@ with col_output:
     # Chatbot pour les modifications (limite augmentée à 10 échanges)
     if st.session_state.test_cases:
         st.markdown("---")
-        st.subheader("💬 Assistant de Correction (limité à 10 échanges)")
+        st.subheader("💬 Assistant d’Amélioration (limité à 10 échanges)")
         
         # Afficher le compteur d'échanges restants
         remaining_exchanges = 10 - st.session_state.chat_count
@@ -925,7 +924,7 @@ with col_output:
                         st.markdown("---")
         else:
             # Zone de saisie du chat
-            user_message = st.text_area("Demandez des modifications ou des améliorations:", 
+            user_message = st.text_area("Demander des modifications ou des améliorations:", 
                                          placeholder="Exemple: Ajouter un scénario de test pour...", 
                                          height=100,
                                          key="user_message")
