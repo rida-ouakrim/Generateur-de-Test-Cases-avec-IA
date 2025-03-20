@@ -849,7 +849,7 @@ with col_input:
             st.session_state.format_type = "custom"
         
         example_case = st.text_area(
-            "Fournir le 1er Cas de test au format attendu" + (" (Obligatoire)" if format_option == "Personnalisé (basé sur l'exemple)" else " (Optionnel)"),
+            "Fournir le 1er Cas de test au format attendu" + ("(Obligatoire)" if format_option == "Personnalisé (Basé sur l’exemple)" else " (Optionnel)"),
             height=150
         )
     
