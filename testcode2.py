@@ -811,7 +811,7 @@ with col_input:
                 st.session_state.context_input = context_input
         
         with context_tab2:
-            context_file = st.file_uploader("Choisir un fichier décrivant le contexte de l’application (Obligatoire)", type=["txt", "docx", "pdf"], key="context_file")
+            context_file = st.file_uploader("Choisir un fichier décrivant le contexte de l’application (*)", type=["txt", "docx", "pdf"], key="context_file")
             if context_file is not None:
                 try:
                     if context_file.name.endswith('.docx'):
