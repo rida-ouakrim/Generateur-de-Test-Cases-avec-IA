@@ -802,7 +802,7 @@ with col_input:
         context_tab1, context_tab2 = st.tabs(["Saisie manuelle", "Upload de fichier"])
         
         with context_tab1:
-            context_input = st.text_area("Description générale de l'application (Obligatoire)", 
+            context_input = st.text_area("Description générale de l'application (*)", 
                                value=st.session_state.context_input,
                                height=100)
             
